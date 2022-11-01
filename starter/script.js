@@ -3,6 +3,32 @@
 const btn = document.querySelector('.btn-country');
 const countriesContainer = document.querySelector('.countries');
 
+const renderCountry = function (data, className = '') {
+  const html = `
+    <article class="country ${className}">
+            <img class="country__img" src="${data.flag}" />
+            <div class="country__data">
+              <h3 class="country__name">${data.name}</h3>
+              <h4 class="country__region">${data.region}</h4>
+              <p class="country__row"><span>👫</span>${+data.population}</p>
+              <p class="country__row"><span>🗣️</span>${
+                data.languages[0].name
+              }</p>
+              <p class="country__row"><span>💰</span>${
+                data.currencies[0].name
+              }</p>
+              <p class="country__row"><span>💰</span>${data.callingCodes}</p>
+            </div>
+  
+          </article>
+    `;
+  countriesContainer.insertAdjacentHTML('beforeend', html);
+  // countriesContainer.style.opacity = 1;
+};
+const renderError = function (msg) {
+  countriesContainer.insertAdjacentText('beforeend', msg);
+  // countriesContainer.style.opacity = 1;
+};
 ///////////////////////////////////////
 //////XML httpReqest
 // const getCountryData = function (country) {
@@ -41,28 +67,6 @@ const countriesContainer = document.querySelector('.countries');
 /////////////////////////////////////////////////////
 ///////////////////////CALL BACK HELL/////////////////////////
 
-const renderCountry = function (data, className = '') {
-  const html = `
-    <article class="country ${className}">
-            <img class="country__img" src="${data.flag}" />
-            <div class="country__data">
-              <h3 class="country__name">${data.name}</h3>
-              <h4 class="country__region">${data.region}</h4>
-              <p class="country__row"><span>👫</span>${+data.population}</p>
-              <p class="country__row"><span>🗣️</span>${
-                data.languages[0].name
-              }</p>
-              <p class="country__row"><span>💰</span>${
-                data.currencies[0].name
-              }</p>
-              <p class="country__row"><span>💰</span>${data.callingCodes}</p>
-            </div>
-  
-          </article>
-    `;
-  countriesContainer.insertAdjacentHTML('beforeend', html);
-  countriesContainer.style.opacity = 1;
-};
 // const getCountryData = function (country) {
 //   const request = new XMLHttpRequest();
 //   request.open('GET', `https://restcountries.com/v2/name/${country}`);
@@ -146,19 +150,66 @@ const renderCountry = function (data, className = '') {
 // getCountryData('Nigeria');
 
 ///////////Modifying the code///////////////////////////
+const getJason = function (url, errMsg = 'Something went wrong') {
+  return fetch(url).then(response => {
+    if (!response.ok) throw new Error(`${errMsg} (${response.status})`);
+    return response.json();
+  });
+};
+
+// const getCountryData = function (country) {
+//   fetch(`https://restcountries.com/v2/name/${country}`)
+//     .then(response => {
+//       if (!response.ok)
+//         throw new Error(`Country not found (${response.status})`);
+//       return response.json();
+//     })
+//     .then(data => {
+//       renderCountry(data[0]);
+//       const neighbour = data[0].borders?.[0];
+//       if (!neighbour) return;
+
+//       // country2
+//       return fetch(`https://restcountries.com/v2/alpha/${neighbour}`);
+//     })
+//     .then(response => response.json())
+//     .then(data => renderCountry(data, 'neighbour'))
+//     //th catch method will be call when the promise is rejected
+//     .catch(err => {
+//       renderError(`something went wrong 💥💥💥 ${err.message} try again! `);
+//     })
+//     //the finally methd works because the methd right above it return a promise
+//     .finally(() => {
+//       countriesContainer.style.opacity = 1;
+//     });
+// };
+
 const getCountryData = function (country) {
-  fetch(`https://restcountries.com/v2/name/${country}`)
-    .then(response => response.json())
+  getJason(`https://restcountries.com/v2/name/${country}`, 'Country not found')
     .then(data => {
       renderCountry(data[0]);
       const neighbour = data[0].borders?.[0];
-      if (!neighbour) return;
+      console.log(neighbour);
+      // const neighbour = '101';
+      if (!neighbour) throw new Error('No neighbouring country found');
 
       // country2
-      return fetch(`https://restcountries.com/v2/alpha/${neighbour}`);
+      return getJason(
+        `https://restcountries.com/v2/alpha/${neighbour}`,
+        'Country not found'
+      );
     })
-    .then(response => response.json())
-    .then(data => renderCountry(data, 'neighbour'));
+    .then(data => renderCountry(data, 'neighbour'))
+    //th catch method will be call when the promise is rejected
+    .catch(err => {
+      renderError(`something went wrong 💥💥💥 ${err.message} try again! `);
+    })
+    //the finally method works because the method right above it return a promise
+    .finally(() => {
+      countriesContainer.style.opacity = 1;
+    });
 };
-getCountryData('Nigeria');
-getCountryData('cameroon');
+btn.addEventListener('click', () => {
+  // getCountryData('Nigeria');
+  getCountryData('nigeria');
+});
