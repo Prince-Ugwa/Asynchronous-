@@ -450,14 +450,82 @@ btn.addEventListener('click', () => {
 */
 
 //////////////////EVENT LOOP IN PRACTICE////////////////////////
-console.log(`Test start`);
-setTimeout(() => console.log('0 sec timer'), 0);
-Promise.resolve(`Resolved promise 1`).then(res => console.log(res));
+// console.log(`Test start`);
+// setTimeout(() => console.log('0 sec timer'), 0);
+// Promise.resolve(`Resolved promise 1`).then(res => console.log(res));
 
-Promise.resolve(`Promise 2`).then(res => {
-  for (let i = 0; i < 1000000000; i++) {}
-  console.log(res);
+// Promise.resolve(`Promise 2`).then(res => {
+//   for (let i = 0; i < 10000000; i++) {}
+//   console.log(res);
+// });
+// console.log(`Test end`);
+/*
+//////////////BUILDING A SIMPLE FUNCTION,////////////////
+const lotteryPromise = new Promise(function (resolve, reject) {
+  setTimeout(() => {
+    if (Math.random() >= 0.5) {
+      resolve(`You WIN 💰`);
+    } else {
+      reject(new Error(`You lost ur money🥺`));
+    }
+  }, 2000);
 });
-console.log(`Test end`);
 
-//BUILDING A SIMPLE FUNCTION,////////////////
+//consume the promise
+lotteryPromise.then(res => console.log(res)).catch(err => console.error(err));
+
+///////////////////PROMISIFYING SETTIMEOUT//////////////////////////////////
+// most time we consume promises and we only build promises to wrapped all callback
+//base asynchronous behavior into promise. (promisifying)
+//////Promisifying simply means to convert callback base asynchronous behavior into promise based.
+const wait = function (sec) {
+  return new Promise(resolve => setTimeout(resolve, sec * 1000));
+};
+
+wait(2)
+  .then(() => {
+    console.log('1 second passed');
+    return wait(1);
+  })
+  .then(() => console.log('2 second passed'))
+  .then(() => {
+    console.log('3 second passed');
+    return wait(1);
+  })
+  .then(() => console.log('4 second passed'));
+
+////////////////////////////////////
+//reference code
+// setTimeout(() => {
+//   console.log('1 second passed');
+//   setTimeout(() => {
+//     console.log('2 seconds passed');
+//     setTimeout(() => {
+//       console.log('3 second passed');
+//       setTimeout(() => {
+//         console.log('4 second passed');
+//       }, 1000);
+//     }, 1000);
+//   }, 1000);
+// }, 1000);
+
+Promise.resolve('Success').then(value => console.log(value));
+Promise.reject(new Error('Declined')).catch(err => console.error(err));
+*/
+
+///////////////////PROMISIFYING THE GEOLOCATION////////////////////////////
+// navigator.geolocation.getCurrentPosition(
+//   position => console.log(position),
+//   err => console.erro(err)
+// );
+
+const getPosition = function () {
+  return new Promise(function (resolve, reject) {
+    // navigator.geolocation.getCurrentPosition(
+    //   position => resolve(position),
+    //   err => reject(err)
+    // );
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+getPosition().then(pos => console.log(pos));
