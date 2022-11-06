@@ -270,11 +270,11 @@ function renderCountry(data, className = '') {
           </div>
         </article>`;
   countriesContainer.insertAdjacentHTML('beforeend', html);
-  // countriesContainer.style.opacity = 1;
+  countriesContainer.style.opacity = 1;
 }
 function renderError(msg) {
   countriesContainer.insertAdjacentText('beforeend', msg);
-  // countriesContainer.style.opacity = 1;
+  countriesContainer.style.opacity = 1;
 }
 // function getCountryAndNeigbour(country) {
 //   const request = new XMLHttpRequest();
@@ -518,7 +518,7 @@ Promise.resolve('Success').then(value => console.log(value));
 Promise.reject(new Error('Declined')).catch(err => console.error(err));
 */
 
-///////////////////PROMISIFYING THE GEOLOCATION////////////////////////////
+///////////////////PROMISIFYING THE GEOLOCATION API////////////////////////////
 // navigator.geolocation.getCurrentPosition(
 //   position => console.log(position),
 //   err => console.erro(err)
@@ -534,7 +534,7 @@ Promise.reject(new Error('Declined')).catch(err => console.error(err));
 //   });
 // };
 // getPosition().then(pos => console.log(pos));
-
+/*
 const getPosition = function () {
   return new Promise(function (resolve, reject) {
     // navigator.geolocation.getCurrentPosition(
@@ -602,7 +602,7 @@ PART 2
 TEST DATA: Images in the img folder. Test the error handler by passing a wrong image path. Set the network speed to 'Fast 3G' in the dev tools Network tab, otherwise images load too fast.
 
 GOOD LUCK 😀
-*/
+
 const wait = function (sec) {
   return new Promise(resolve => setTimeout(resolve, sec * 1000));
 };
@@ -650,3 +650,84 @@ createImage(`img/img-1.jpg`)
   })
   .then(() => (curImage.style.display = 'none'))
   .catch(err => console.error(err));
+*/
+
+///////////////////////CONSUMING PROMISE WITH ASYNC/AWAIT//////////////////////////
+// Since ES2017 there is a better way to consume a promise which is using async await
+//async function is function that will keep running in the background while performing the
+//code that is inside of it. then when the function is done it will atomatically return a promise
+//async await is simply a synthatic sgar over the then method
+
+const getPosition = function () {
+  return new Promise(function (resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+
+// const whereAmI = async function (country) {
+// const whereAmI = async function () {
+//   //Geolocation
+//   const position = await getPosition();
+//   const { latitude: lat, longitude: lng } = position.coords;
+
+//   //reverse geocoding
+//   const resGeo = await fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`);
+//   const dataGeo = await resGeo.json();
+//   console.log(dataGeo);
+
+//   //country data
+//   const response = await fetch(
+//     `https://restcountries.com/v2/name/${dataGeo.country}`
+//   );
+//   const data = await response.json();
+//   renderCountry(data[0]);
+// };
+// console.log('First Test');
+// whereAmI();
+
+// const checkCount = function (country) {
+//   fetch(`https://restcountries.com/v2/name/${country}`)
+//     .then(response => {
+//       return response.json();
+//     })
+//     .then(data => {
+//       console.log(data);
+//     });
+// };
+// console.log('test again');
+// checkCount('Ghana');
+
+// ERROR HANDLING WITH TRY..CATCH
+
+const whereAmI = async function () {
+  //Geolocation
+  try {
+    {
+      const position = await getPosition();
+      const { latitude: lat, longitude: lng } = position.coords;
+
+      //reverse geocoding
+      const resGeo = await fetch(
+        `https://geocode.xyz/${lat},${lng}?geoit=json`
+      );
+      if (!resGeo.ok) throw new Error('Problem getting location data');
+      const dataGeo = await resGeo.json();
+      console.log(dataGeo);
+
+      //country data
+      const response = await fetch(
+        `https://restcountries.com/v2/name/${dataGeo.country}`
+      );
+      if (!response.ok) throw new Error('Problem getting location country');
+      const data = await response.json();
+      renderCountry(data[0]);
+    }
+  } catch (err) {
+    console.error(`${err.message} 💥💥`);
+    renderError(` ${err.message}💥💥`);
+  }
+};
+console.log('First Test');
+whereAmI();
+whereAmI();
+whereAmI();
