@@ -650,22 +650,22 @@ createImage(`img/img-1.jpg`)
   })
   .then(() => (curImage.style.display = 'none'))
   .catch(err => console.error(err));
-*/
+ */
 
 ///////////////////////CONSUMING PROMISE WITH ASYNC/AWAIT//////////////////////////
 // Since ES2017 there is a better way to consume a promise which is using async await
 //async function is function that will keep running in the background while performing the
 //code that is inside of it. then when the function is done it will atomatically return a promise
-//async await is simply a synthatic sgar over the then method
+//async await is simply a synthatic sugar over the then method
 
-const getPosition = function () {
-  return new Promise(function (resolve, reject) {
-    navigator.geolocation.getCurrentPosition(resolve, reject);
-  });
-};
+// const getPosition = function () {
+//   return new Promise(function (resolve, reject) {
+//     navigator.geolocation.getCurrentPosition(resolve, reject);
+//   });
+// };
 
 // const whereAmI = async function (country) {
-// const whereAmI = async function () {
+//   // const whereAmI = async function () {
 //   //Geolocation
 //   const position = await getPosition();
 //   const { latitude: lat, longitude: lng } = position.coords;
@@ -698,11 +698,18 @@ const getPosition = function () {
 // checkCount('Ghana');
 
 // ERROR HANDLING WITH TRY..CATCH
-
+// try {
+//   let y = 1;
+//   const x = 2;
+//   x = 3;
+// } catch (err) {
+//   alert(err.message);
+// }
+/*
 const whereAmI = async function () {
-  //Geolocation
   try {
     {
+      //Geolocation
       const position = await getPosition();
       const { latitude: lat, longitude: lng } = position.coords;
 
@@ -712,7 +719,7 @@ const whereAmI = async function () {
       );
       if (!resGeo.ok) throw new Error('Problem getting location data');
       const dataGeo = await resGeo.json();
-      console.log(dataGeo);
+      // console.log(dataGeo);
 
       //country data
       const response = await fetch(
@@ -721,13 +728,226 @@ const whereAmI = async function () {
       if (!response.ok) throw new Error('Problem getting location country');
       const data = await response.json();
       renderCountry(data[0]);
+      return `You are in ${dataGeo.city}, ${dataGeo.state} ${dataGeo.country}..`;//returning value from async function
     }
   } catch (err) {
-    console.error(`${err.message} 💥💥`);
-    renderError(` ${err.message}💥💥`);
+    console.error(`${err} 💥💥`);
+    renderError(`💥${err.message}`);
+
+
+    ////Reject promise returned from async function
+    throw err;
   }
 };
-console.log('First Test');
-whereAmI();
-whereAmI();
-whereAmI();
+console.log('1: will get location');
+
+////This method seems like mixing the old way of working with promise
+const city=whereAmI()
+// console.log(city) this will return a pending promise and it will be pending
+// whereAmI()
+//   .then(city => console.log(city))
+//   .catch(err => console.error(`2:${err.message}💥`))
+//   .finally(() => console.log('3:finish getting location'));
+
+// console.log('3: Finished getting locatio');
+
+
+//convert the above code into async await function
+
+// the best for that is using the iffy functons. iffy fx are immediately onvoke functions
+(async function () {
+  try {
+    const city = await whereAmI();
+    console.log(`2:${city}`);
+  } catch (err) {
+    console.error(`2:${err.message}💥`);
+  }
+  console.log('3:finish getting location');
+})();
+///////////////////////////////////////////////////////////////////////////////////////
+// const asyncv = async function () {};
+// const check = asyncv();
+// console.log(check);
+
+
+/////////////////RETURNING PROMISES IN PARALLEL////////////////////////////////////
+const get3Countries = async function (c1, c2, c3) {
+  try {
+    // const [data1] = await getJson(`https://restcountries.com/v2/name/${c1}`);
+    // const [data2] = await getJson(`https://restcountries.com/v2/name/${c2}`);
+    // const [data3] = await getJson(`https://restcountries.com/v2/name/${c3}`);
+
+    ///promise.all short circut when one promise reject
+    //Whenever you have to do multiple promise at once and operation  that doesnot depend on one another
+    // the yo should always run them in parallel using promise.all
+    const data = await Promise.all([
+      getJson(`https://restcountries.com/v2/name/${c1}`),
+      getJson(`https://restcountries.com/v2/name/${c2}`),
+      getJson(`https://restcountries.com/v2/name/${c3}`),
+    ]);
+    console.log(data.map(d => d[0].capital));
+  } catch (err) {
+    console.error(err);
+  }
+};
+get3Countries('nigeria', 'canada', 'uganda');
+
+
+///////////////////////////////// other Promise Combinators
+
+//promise.race
+(async function () {
+  const [resp] = await Promise.race([
+    getJson(`https://restcountries.com/v2/name/italy`),
+    getJson(`https://restcountries.com/v2/name/ghana`),
+    getJson(`https://restcountries.com/v2/name/egypt`),
+  ]);
+  console.log(resp);
+})();
+
+const timeout = function (sec) {
+  return new Promise(function (_, reject) {
+    setTimeout(() => {
+      reject(new Error(`Request took too long!`));
+    }, sec * 1000);
+  });
+};
+
+Promise.race([getJson(`https://restcountries.com/v2/name/ghana`), timeout(0.1)])
+  .then(res => console.log(res[0]))
+  .catch(err => console.error(err));
+
+// promise.allsettled: takes in an array of simple promise and return an arry of all settled promise.
+// never short circuit
+Promise.allSettled([
+  Promise.resolve('Success'),
+  Promise.reject('ERROR'),
+  Promise.resolve('Anothers success'),
+])
+  .then(res => console.log(res))
+  .catch(err => console.error(err));
+
+Promise.all([
+  Promise.resolve('Success'),
+  Promise.reject('ERROR'),
+  Promise.resolve('Anothers success'),
+])
+  .then(res => console.log(res))
+  .catch(err => console.error(err));
+
+///promise.any(): [ES2021]
+Promise.any([
+  Promise.resolve('Success'),
+  Promise.reject('ERROR'),
+  Promise.resolve('Anothers success'),
+])
+  .then(res => console.log(res))
+  .catch(err => console.error(err));
+*/
+
+///////////////////////////////////////
+// Coding Challenge #3
+
+/* 
+PART 1
+Write an async function 'loadNPause' that recreates Coding Challenge #2, 
+this time using async/await (only the part where the promise is consumed).
+ Compare the two versions, think about the big differences, and see which one you like more.
+Don't forget to test the error handler, and to set the network speed to 'Fast 3G' in the dev
+ tools Network tab.
+
+PART 2
+1. Create an async function 'loadAll' that receives an array of image paths 'imgArr';
+2. Use .map to loop over the array, to load all the images with the 'createImage' function (call the resulting array 'imgs')
+3. Check out the 'imgs' array in the console! Is it like you expected?
+4. Use a promise combinator function to actually get the images from the array 😉
+5. Add the 'paralell' class to all the images (it has some CSS styles).
+
+TEST DATA: ['img/img-1.jpg', 'img/img-2.jpg', 'img/img-3.jpg']. To test, turn off the 'loadNPause' function.
+
+GOOD LUCK 😀
+*/
+
+// solution
+
+const wait = function (sec) {
+  return new Promise(resolve => setTimeout(resolve, sec * 1000));
+};
+
+const imgContainer = document.querySelector('.images');
+
+const createImage = function (imgPath) {
+  return new Promise(function (resolve, reject) {
+    const img = document.createElement('img');
+    img.src = imgPath;
+
+    img.addEventListener('load', function () {
+      imgContainer.append(img);
+      resolve(img);
+    });
+    img.addEventListener('err', function () {
+      reject(new Error('Image not found'));
+    });
+  });
+};
+// let curImage;
+// createImage(`img/img-1.jpg`)
+//   .then(img => {
+//     curImage = img;
+//     console.log('Img 1 loaded');
+//     return wait(2);
+//   })
+//   .then(() => {
+//     curImage.style.display = 'none';
+//     return createImage('img/img-2.jpg');
+//   })
+//   .then(img => {
+//     curImage = img;
+//     console.log('Img 2 loaded');
+//     return wait(2);
+//   })
+//   .then(() => {
+//     curImage.style.display = 'none';
+//     return createImage('img/img-3.jpg');
+//   })
+//   .then(img => {
+//     curImage = img;
+//     console.log('Img 3 loaded');
+//     return wait(2);
+//   })
+//   .then(() => (curImage.style.display = 'none'))
+//   .catch(err => console.error(err));
+
+const loadNpause = async function () {
+  try {
+    let img = await createImage(`img/img-1.jpg`);
+    console.log('image 1 loaded');
+    await wait(2);
+    img.style.display = 'none';
+
+    //load 2
+    img = await createImage(`img/img-2.jpg`);
+    console.log('image 2 loaded');
+    await wait(2);
+    img.style.display = 'none';
+  } catch (err) {
+    console.error(err);
+  }
+};
+// loadNpause();
+
+//part
+
+const loadAll = async function (imgArr) {
+  try {
+    const imgs = imgArr.map(async img => await createImage(img));
+    // console.log(imgs);
+
+    const imgEl = await Promise.all(imgs);
+    console.log(imgEl);
+    imgEl.forEach(img => img.classList.add('parallel'));
+  } catch (err) {
+    console.error(err);
+  }
+};
+loadAll(['img/img-1.jpg', 'img/img-2.jpg', 'img/img-3.jpg']);
